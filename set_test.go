@@ -1,7 +1,9 @@
 package set
 
 import (
+	"fmt"
 	"math/rand"
+	"strings"
 	"testing"
 	"time"
 
@@ -138,4 +140,29 @@ func TestSetSlice(t *testing.T) {
 		sl := s.Slice()
 		assert.ElementsMatch(t, []int{1, 2, 3, 4, 5}, sl)
 	})
+}
+
+func TestSetString(t *testing.T) {
+	tcs := [][]interface{}{
+		{},
+		{1, 2, 3, 4, 5},
+		{1},
+	}
+
+	for _, tc := range tcs {
+		s := strings.TrimSpace(New(tc...).String())
+		assert.Equal(t, "Set{", s[:4])
+		assert.Equal(t, '}', rune(s[len(s)-1]))
+
+		contents := s[4 : len(s)-1]
+		var parts []string
+		if contents != "" {
+			parts = strings.Split(contents, ", ")
+		}
+		strElts := make([]string, 0, len(tc))
+		for _, elt := range tc {
+			strElts = append(strElts, fmt.Sprintf("%v", elt))
+		}
+		assert.ElementsMatch(t, strElts, parts)
+	}
 }

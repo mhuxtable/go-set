@@ -1,5 +1,10 @@
 package set
 
+import (
+	"fmt"
+	"strings"
+)
+
 type set map[interface{}]struct{}
 
 // Set is a basic set data structure. It is not safe for concurrent use. The
@@ -70,4 +75,13 @@ func (s Set) Slice() []interface{} {
 		sl = append(sl, k)
 	}
 	return sl
+}
+
+// String implements fmt.Stringer
+func (s Set) String() string {
+	str := make([]string, 0, len(s.set))
+	for el, _ := range s.set {
+		str = append(str, fmt.Sprintf("%v", el))
+	}
+	return fmt.Sprintf("Set{%s}", strings.Join(str, ", "))
 }
