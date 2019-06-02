@@ -22,6 +22,10 @@ func New(x ...interface{}) Set {
 
 // Add adds the provided element(s) to the Set.
 func (s *set) Add(xs ...interface{}) {
+	if len(xs) == 0 {
+		return
+	}
+
 	if *s == nil {
 		*s = make(set)
 	}
