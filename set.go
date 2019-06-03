@@ -71,7 +71,7 @@ func (s *set) Remove(x interface{}) {
 // Slice returns a slice of the elements contained in the Set.
 func (s Set) Slice() []interface{} {
 	sl := make([]interface{}, 0, len(s.set))
-	for k, _ := range s.set {
+	for k := range s.set {
 		sl = append(sl, k)
 	}
 	return sl
@@ -80,7 +80,7 @@ func (s Set) Slice() []interface{} {
 // String implements fmt.Stringer
 func (s Set) String() string {
 	str := make([]string, 0, len(s.set))
-	for el, _ := range s.set {
+	for el := range s.set {
 		str = append(str, fmt.Sprintf("%v", el))
 	}
 	return fmt.Sprintf("Set{%s}", strings.Join(str, ", "))

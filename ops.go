@@ -21,7 +21,7 @@ func (s1 *set) Subtract(s2 Set) {
 		return
 	}
 
-	for k, _ := range *s1 {
+	for k := range *s1 {
 		if s2.Has(k) {
 			delete(*s1, k)
 		}
