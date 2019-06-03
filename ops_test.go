@@ -11,6 +11,44 @@ type testCase struct {
 }
 
 var (
+	intersectTestCases = []testCase{{
+		leftElements:  nil,
+		rightElements: nil,
+		expect:        nil,
+	}, {
+		leftElements:  []interface{}{1, 2, 3, 4, 5},
+		rightElements: nil,
+		expect:        nil,
+	}, {
+		leftElements:  nil,
+		rightElements: []interface{}{1, 2, 3, 4, 5},
+		expect:        nil,
+	}, {
+		leftElements:  []interface{}{},
+		rightElements: []interface{}{1},
+		expect:        []interface{}{},
+	}, {
+		leftElements:  []interface{}{1},
+		rightElements: []interface{}{},
+		expect:        []interface{}{},
+	}, {
+		leftElements:  []interface{}{1},
+		rightElements: []interface{}{1},
+		expect:        []interface{}{1},
+	}, {
+		leftElements:  []interface{}{1, 2, 3},
+		rightElements: []interface{}{1, 2},
+		expect:        []interface{}{1, 2},
+	}, {
+		leftElements:  []interface{}{1, 2},
+		rightElements: []interface{}{1, 2},
+		expect:        []interface{}{1, 2},
+	}, {
+		leftElements:  []interface{}{1, 2},
+		rightElements: []interface{}{2},
+		expect:        []interface{}{2},
+	}}
+
 	unionTestCases = []testCase{{
 		leftElements:  nil,
 		rightElements: nil,
@@ -116,6 +154,12 @@ func testSetOperation(cases []testCase, op func(s1 *Set, s2 Set)) func(t *testin
 	}
 }
 
+func TestSetIntersection(t *testing.T) {
+	testSetOperation(intersectTestCases, func(s1 *Set, s2 Set) {
+		s1.Intersect(s2)
+	})
+}
+
 func TestSetUnion(t *testing.T) {
 	testSetOperation(unionTestCases, func(s1 *Set, s2 Set) {
 		s1.Union(s2)
@@ -147,6 +191,10 @@ func testNonMutatingSetOperation(cases []testCase, op func(s1, s2 Set) Set) func
 			require.ElementsMatch(t, tc.expect, out.Slice())
 		}
 	}
+}
+
+func TestIntersection(t *testing.T) {
+	testNonMutatingSetOperation(intersectTestCases, Intersect)(t)
 }
 
 func TestUnion(t *testing.T) {
