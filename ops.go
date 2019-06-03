@@ -1,6 +1,6 @@
 package set
 
-// Union returns the set union of sets s1 and s2 by mutating s1
+// Union computes the set union of sets s1 and s2, leaving the result in set s1.
 func (s1 *set) Union(s2 Set) {
 	s1.Add(s2.Slice()...)
 }

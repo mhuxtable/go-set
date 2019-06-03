@@ -15,6 +15,24 @@ func init() {
 	rand.Seed(time.Now().Unix())
 }
 
+func AssertSetElementsMatch(t assert.TestingT, expected []interface{}, set Set) (ok bool) {
+	if h, ok := t.(interface {
+		Helper()
+	}); ok {
+		h.Helper()
+	}
+	return assert.ElementsMatch(t, expected, set.Slice())
+}
+
+func RequireSetElementsMatch(t require.TestingT, expected []interface{}, set Set) {
+	if h, ok := t.(interface {
+		Helper()
+	}); ok {
+		h.Helper()
+	}
+	require.ElementsMatch(t, expected, set.Slice())
+}
+
 func TestSetNew(t *testing.T) {
 	t.Run("New creates an empty set", func(t *testing.T) {
 		s := New()
@@ -39,6 +57,7 @@ func TestSetAdd(t *testing.T) {
 		assert.True(t, s.Has(4))
 		assert.True(t, s.Has(5))
 		assert.True(t, s.Has(6))
+		AssertSetElementsMatch(t, []interface{}{4, 5, 6}, s)
 	})
 
 	t.Run("Add initialises an uninitialised Set", func(t *testing.T) {
@@ -50,6 +69,7 @@ func TestSetAdd(t *testing.T) {
 		assert.True(t, s.Has(7))
 		assert.True(t, s.Has(8))
 		assert.True(t, s.Has(9))
+		AssertSetElementsMatch(t, []interface{}{7, 8, 9}, s)
 	})
 }
 
@@ -104,6 +124,8 @@ func TestSetRemove(t *testing.T) {
 	t.Run("Remove returns cleanly on an uninitialised Set", func(t *testing.T) {
 		var s Set
 		s.Remove(12345)
+		require.Equal(t, 0, s.Count())
+		AssertSetElementsMatch(t, nil, s)
 	})
 
 	t.Run("Remove removes an item previously added to the Set s.t. Has(item) returns false", func(t *testing.T) {
@@ -117,6 +139,7 @@ func TestSetRemove(t *testing.T) {
 		require.False(t, s.Has(3))
 		require.True(t, s.Has(4))
 		require.True(t, s.Has(5))
+		RequireSetElementsMatch(t, []interface{}{1, 2, 4, 5}, s)
 	})
 
 	t.Run("Remove is a no-op for an element not in the set", func(t *testing.T) {
@@ -125,6 +148,7 @@ func TestSetRemove(t *testing.T) {
 		require.Equal(t, 3, s.Count())
 		s.Remove(4)
 		require.Equal(t, 3, s.Count())
+		RequireSetElementsMatch(t, []interface{}{1, 2, 3}, s)
 	})
 }
 
