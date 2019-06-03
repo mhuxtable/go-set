@@ -17,10 +17,6 @@ func (s1 *set) Union(s2 Set) {
 
 // Subtract subtracts set s2 from set s1, mutating the set s1 in-place.
 func (s1 *set) Subtract(s2 Set) {
-	if s1 == nil {
-		return
-	}
-
 	for k := range *s1 {
 		if s2.Has(k) {
 			delete(*s1, k)
