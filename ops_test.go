@@ -137,40 +137,42 @@ func makeSet(t *testing.T, xs []interface{}) Set {
 	return s
 }
 
-func testSetOperation(cases []testCase, op func(s1 *Set, s2 Set)) func(t *testing.T) {
-	return func(t *testing.T) {
-		for _, tc := range cases {
-			s1 := makeSet(t, tc.leftElements)
-			s2 := makeSet(t, tc.rightElements)
+func testSetOperation(t *testing.T, cases []testCase, op func(s1 *Set, s2 Set)) {
+	t.Helper()
 
-			op(&s1, s2)
+	for i, tc := range cases {
+		t.Logf("testing case %d: %s", i, tc)
 
-			// s2 is unmodified
-			RequireSetElementsMatch(t, tc.rightElements, s2)
+		s1 := makeSet(t, tc.leftElements)
+		s2 := makeSet(t, tc.rightElements)
 
-			// s1 has been modified appropriately
-			RequireSetElementsMatch(t, tc.expect, s1)
-		}
+		op(&s1, s2)
+
+		// s2 is unmodified
+		RequireSetElementsMatch(t, tc.rightElements, s2)
+
+		// s1 has been modified appropriately
+		RequireSetElementsMatch(t, tc.expect, s1)
 	}
 }
 
 func TestSetIntersection(t *testing.T) {
-	testSetOperation(intersectTestCases, func(s1 *Set, s2 Set) {
+	testSetOperation(t, intersectTestCases, func(s1 *Set, s2 Set) {
 		s1.Intersect(s2)
 	})
 }
 
 func TestSetUnion(t *testing.T) {
-	testSetOperation(unionTestCases, func(s1 *Set, s2 Set) {
+	testSetOperation(t, unionTestCases, func(s1 *Set, s2 Set) {
 		s1.Union(s2)
-	})(t)
+	})
 
 }
 
 func TestSetSubtract(t *testing.T) {
-	testSetOperation(subtractTestCases, func(s1 *Set, s2 Set) {
+	testSetOperation(t, subtractTestCases, func(s1 *Set, s2 Set) {
 		s1.Subtract(s2)
-	})(t)
+	})
 }
 
 func testNonMutatingSetOperation(cases []testCase, op func(s1, s2 Set) Set) func(*testing.T) {
