@@ -14,7 +14,10 @@ var (
 EOF
 
 TEMPLATES=
-for x in $(ls $DIR/*.tpl | sort); do
+
+function emit_file() {
+	local x="$1"
+
 	# Not tolerant to non-ASCII template filenames. Okay for now...
 	tpl="$(<"$x")"
 	tpl=${tpl//\`/"\` + \"\`\" + \`"}
@@ -25,7 +28,10 @@ for x in $(ls $DIR/*.tpl | sort); do
 	tpl_$(basename "${x%.*}") = \`${tpl}\`
 
 EOF
-done
+}
+
+emit_file set.tpl
+emit_file set_test.tpl
 
 cat <<EOF >>$DIR/values.go
 )

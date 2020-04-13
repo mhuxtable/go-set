@@ -4,7 +4,7 @@ package templates
 
 var (
 
-	// source: /Users/mhuxtable/code/go-set/cmd/genset/templates/set.tpl
+	// source: set.tpl
 	tpl_set = `// vim: syntax=go
 
 package {{.PackageName}}
@@ -165,7 +165,7 @@ func Subtract{{.SetTypeName}}(s1, s2 {{.SetTypeName}}) {{.SetTypeName}} {
 	return s
 }`
 
-	// source: /Users/mhuxtable/code/go-set/cmd/genset/templates/set_test.tpl
+	// source: set_test.tpl
 	tpl_set_test = `// vim: syntax=go
 
 package {{.PackageName}}
