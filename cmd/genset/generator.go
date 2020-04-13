@@ -6,7 +6,6 @@ import (
 	"bytes"
 	"fmt"
 	"go/format"
-	"go/token"
 	"io/ioutil"
 	"log"
 	"os"
@@ -108,7 +107,7 @@ func run(args []string, opts options) error {
 func internalTypeName(setName, dataType string) string {
 	// swap out any characters in the data type name to form a valid identifier for the internal set type name
 	internalTypeName := "_set_" + setName + "_"
-	if token.IsIdentifier(dataType) {
+	if IsIdentifier(dataType) {
 		internalTypeName += dataType
 	} else {
 		internalTypeName += strings.Map(func(r rune) rune {
