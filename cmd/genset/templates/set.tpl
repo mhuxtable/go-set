@@ -2,6 +2,8 @@
 
 package {{.PackageName}}
 
+{{.GoGenerateComment}}
+
 import (
 	"fmt"
 	"reflect"

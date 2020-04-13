@@ -4,6 +4,8 @@
 
 package genericset
 
+//go:generate genset --filename "zz_genset.go" --package-name "genericset" --set-name "Set" --generate-tests=true --generate-comment=true --quiet=true interface{} .
+
 import (
 	"fmt"
 	"reflect"
