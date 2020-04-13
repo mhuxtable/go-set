@@ -3,8 +3,6 @@ module github.com/mhuxtable/go-set
 go 1.12
 
 require (
-	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v0.0.5
-	github.com/spf13/pflag v1.0.3
+	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/stretchr/testify v1.3.0
 )
