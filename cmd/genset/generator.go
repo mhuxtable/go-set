@@ -15,7 +15,7 @@ import (
 	"text/template"
 	"unicode"
 
-	"github.com/mhuxtable/go-set/genset/templates"
+	"github.com/mhuxtable/go-set/cmd/genset/templates"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -58,7 +58,7 @@ func run(args []string, opts options) error {
 		return fmt.Errorf("output filename does not have suffix .go: %s", opts.fileName)
 	}
 
-	if !token.IsIdentifier(opts.setName) {
+	if !IsIdentifier(opts.setName) {
 		return fmt.Errorf("cannot use %s as set name, as it is not a valid identifier", opts.setName)
 	}
 
