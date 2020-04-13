@@ -1,5 +1,3 @@
-// vim: set tw=120
-
 package main
 
 import (
