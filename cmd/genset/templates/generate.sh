@@ -13,7 +13,7 @@ var (
 EOF
 
 TEMPLATES=
-for x in $(ls $DIR/*.tpl); do
+for x in $(ls $DIR/*.tpl | sort); do
 	# Not tolerant to non-ASCII template filenames. Okay for now...
 	tpl="$(<"$x")"
 	tpl=${tpl//\`/"\` + \"\`\" + \`"}
