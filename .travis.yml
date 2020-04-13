@@ -1,7 +1,5 @@
 language: go
 go:
-  - 1.12
-  - 1.13
   - 1.14
   - stable
   - tip
@@ -17,9 +15,7 @@ script:
   - go test -v -covermode=count -coverprofile=coverage.out ./...
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 
-  - cd cmd/genset && go test -v -covermode=count -coverprofile=coverage.out ./...
-  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
-  - cd ../../
+  - hack/build_verify_genset.sh
 
   # Ensure the local repository is up-to-date
   - hack/verify_all.sh
