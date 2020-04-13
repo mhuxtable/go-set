@@ -1,15 +1,19 @@
+// vim: set tw=120
+
 package main
 
 import (
 	"bytes"
 	"fmt"
 	"go/format"
+	"go/token"
 	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
 	"strings"
 	"text/template"
+	"unicode"
 
 	"github.com/mhuxtable/go-set/genset/templates"
 	"github.com/pkg/errors"
@@ -55,6 +59,10 @@ func run(args []string, opts options) error {
 		return fmt.Errorf("output filename does not have suffix .go: %s", opts.fileName)
 	}
 
+	if !token.IsIdentifier(opts.setName) {
+		return fmt.Errorf("cannot use %s as set name, as it is not a valid identifier", opts.setName)
+	}
+
 	if stat, err := os.Stat(outputDir); err != nil {
 		if os.IsNotExist(err) {
 			return errors.Errorf("output path %s does not exist", outputDir)
@@ -75,7 +83,7 @@ func run(args []string, opts options) error {
 		PackageName:         opts.packageName,
 		DataType:            dataType,
 		SetTypeName:         opts.setName,
-		InternalSetTypeName: fmt.Sprintf("_set_%s_%s", opts.setName, dataType),
+		InternalSetTypeName: internalTypeName(opts.setName, dataType),
 	}
 
 	{
@@ -96,6 +104,23 @@ func run(args []string, opts options) error {
 	}
 
 	return nil
+}
+
+func internalTypeName(setName, dataType string) string {
+	// swap out any characters in the data type name to form a valid identifier for the internal set type name
+	internalTypeName := "_set_" + setName + "_"
+	if token.IsIdentifier(dataType) {
+		internalTypeName += dataType
+	} else {
+		internalTypeName += strings.Map(func(r rune) rune {
+			if unicode.IsLetter(r) || unicode.IsDigit(r) {
+				return r
+			}
+			return '_'
+		}, dataType)
+	}
+
+	return internalTypeName
 }
 
 type options struct {
@@ -133,6 +158,7 @@ func generateGoFromTemplate(tpl *template.Template, m model) ([]byte, error) {
 
 	formatted, err := format.Source(buf.Bytes())
 	if err != nil {
+		fmt.Fprintf(os.Stderr, "Input source code was:\n\n%s\n\n", buf.Bytes())
 		return nil, fmt.Errorf("while formatting Go source code: %w", err)
 	}
 

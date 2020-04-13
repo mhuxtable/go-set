@@ -9,6 +9,7 @@ package {{.PackageName}}
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -29,6 +30,29 @@ func New{{.SetTypeName}}(x ...{{.DataType}}) {{.SetTypeName}} {
 		s.Add(item)
 	}
 	return s
+}
+
+// ZZ_GoSetContents returns a copy of the elements stored in this set in a
+// generic form. This is used by generic operations on the set in the go-set
+// package.
+//
+// This is not a stable interface.
+func (s {{.SetTypeName}}) ZZ_GoSetContents() []interface{} {
+	xs := make([]interface{}, 0, len(s.{{.InternalSetTypeName}}))
+	for k := range s.{{.InternalSetTypeName}} {
+		xs = append(xs, k)
+	}
+
+	return xs
+}
+
+// ZZ_GoSetType returns the type of elements stored in this set. This is used
+// by generic operations on the set in the go-set package.
+//
+// This is not a stable interface.
+func (*{{.SetTypeName}}) ZZ_GoSetType() reflect.Type {
+	var x {{.DataType}}
+	return reflect.TypeOf(x)
 }
 
 // Add adds the provided element(s) to the {{.SetTypeName}}.
@@ -90,6 +114,75 @@ func (s {{.SetTypeName}}) String() string {
 		str = append(str, fmt.Sprintf("%v", el))
 	}
 	return fmt.Sprintf("{{.SetTypeName}}{%s}", strings.Join(str, ", "))
+}
+
+// Intersect computes the set intersection of sets s1 and s2, leaving the
+// result in set s1.
+func (s1 *{{.InternalSetTypeName}}) Intersect(s2 {{.SetTypeName}}) {
+	for k := range *s1 {
+		if !s2.Has(k) {
+			delete(*s1, k)
+		}
+	}
+}
+
+// Union computes the set union of sets s1 and s2, leaving the result in set s1.
+func (s1 *{{.InternalSetTypeName}}) Union(s2 {{.SetTypeName}}) {
+	s1.Add(s2.Slice()...)
+}
+
+// Subtract subtracts set s2 from set s1, mutating the set s1 in-place.
+func (s1 *{{.InternalSetTypeName}}) Subtract(s2 {{.SetTypeName}}) {
+	for k := range *s1 {
+		if s2.Has(k) {
+			delete(*s1, k)
+		}
+	}
+}
+
+// Intersect returns the set intersection of sets s1 and s2 in a new {{.SetTypeName}},
+// without mutating the input {{.SetTypeName}}s.
+func Intersect{{.SetTypeName}}(s1, s2 {{.SetTypeName}}) {{.SetTypeName}} {
+	if s1.Count() == 0 || s2.Count() == 0 {
+		return {{.SetTypeName}}{}
+	}
+
+	var s {{.SetTypeName}}
+	for _, el := range s1.Slice() {
+		if s2.Has(el) {
+			s.Add(el)
+		}
+	}
+	return s
+}
+
+// Union returns the set union of sets s1 and s2 in a new {{.SetTypeName}}, without mutating
+// the input {{.SetTypeName}}s.
+func Union{{.SetTypeName}}(s1, s2 {{.SetTypeName}}) {{.SetTypeName}} {
+	if s1.Count() == 0 && s2.Count() == 0 {
+		return {{.SetTypeName}}{}
+	}
+
+	var s {{.SetTypeName}}
+	s.Add(s1.Slice()...)
+	s.Add(s2.Slice()...)
+	return s
+}
+
+// Subtract returns the subtraction of set s2 from set s1 in a new {{.SetTypeName}}, without
+// mutating the input {{.SetTypeName}}s.
+func Subtract{{.SetTypeName}}(s1, s2 {{.SetTypeName}}) {{.SetTypeName}} {
+	if s1.Count() == 0 {
+		return {{.SetTypeName}}{}
+	}
+	if s2.Count() == 0 {
+		return s1
+	}
+
+	var s {{.SetTypeName}}
+	s.Add(s1.Slice()...)
+	s.Subtract(s2)
+	return s
 }`
 
 	tpl_set_test = `// vim: syntax=go
@@ -319,5 +412,288 @@ func Test{{.SetTypeName}}String(t *testing.T) {
 		}
 		assert.ElementsMatch(t, strElts, parts)
 	}
+}
+
+type test{{.SetTypeName}}Case struct {
+	leftElements, rightElements, expect []{{.DataType}}
+}
+
+func appendTest{{.SetTypeName}}Case(testCases []test{{.SetTypeName}}Case, left, right, expect []{{.DataType}}) []test{{.SetTypeName}}Case {
+	return append(testCases, test{{.SetTypeName}}Case{
+		leftElements:  append(left[:0:0], left...),
+		rightElements: append(right[:0:0], right...),
+		expect:        append(expect[:0:0], expect...),
+	})
+}
+
+func intersectTestCases{{.SetTypeName}}() []test{{.SetTypeName}}Case {
+	var testCases []test{{.SetTypeName}}Case
+	app := appendTest{{.SetTypeName}}Case
+	n := get{{.SetTypeName}}Items
+
+	testCases = append(testCases, []test{{.SetTypeName}}Case{{"{{"}}
+		leftElements:  nil,
+		rightElements: nil,
+		expect:        nil,
+	}, {
+		leftElements:  n(5),
+		rightElements: nil,
+		expect:        nil,
+	}, {
+		leftElements:  nil,
+		rightElements: n(5),
+		expect:        nil,
+	}, {
+		leftElements:  []{{.DataType}}{},
+		rightElements: n(1),
+		expect:        []{{.DataType}}{},
+	}, {
+		leftElements:  n(1),
+		rightElements: []{{.DataType}}{},
+		expect:        []{{.DataType}}{},
+	}, {
+		leftElements:  []{{.DataType}}{},
+		rightElements: []{{.DataType}}{},
+		expect:        []{{.DataType}}{},
+	}}...)
+
+
+	// We require persistent values in the following, so they require more computation
+	// to avoid any randomness in the new item factory
+	{
+		onlyOne := n(1)
+		testCases = app(testCases, onlyOne, onlyOne, onlyOne)
+	}
+	{
+		moreLeft := n(3)
+		thanRight := moreLeft[:2]
+		testCases = app(testCases, moreLeft, thanRight, thanRight)
+	}
+	{
+		// More than one, same left-right
+		sameMultipleLeftRight := n(2)
+		testCases = app(testCases, sameMultipleLeftRight, sameMultipleLeftRight, sameMultipleLeftRight)
+	}
+	{
+		twoLeft := n(2)
+		oneRight := twoLeft[1:]
+		testCases = app(testCases, twoLeft, oneRight, oneRight)
+	}
+
+	return testCases
+}
+
+func unionTestCases{{.SetTypeName}}() []test{{.SetTypeName}}Case {
+	var testCases []test{{.SetTypeName}}Case
+	app := appendTest{{.SetTypeName}}Case
+	n := get{{.SetTypeName}}Items
+
+	testCases = append(testCases, []test{{.SetTypeName}}Case{{"{{"}}
+		leftElements:  nil,
+		rightElements: nil,
+		expect:        nil,
+	}, {
+		leftElements:  []{{.DataType}}{},
+		rightElements: []{{.DataType}}{},
+		expect:        []{{.DataType}}{},
+	}}...)
+
+
+	// We require access to the same generated values in both arms of the
+	// test in the following, so they require computation to workaround
+	// randomness in the new item generator
+	{
+		onlyLeft := n(5)
+		testCases = app(testCases, onlyLeft, nil, onlyLeft)
+	}
+	{
+		onlyRight := n(5)
+		testCases = app(testCases, nil, onlyRight, onlyRight)
+	}
+	{
+		onlyOneLeft := n(1)
+		testCases = app(testCases, onlyOneLeft, nil, onlyOneLeft)
+	}
+	{
+		onlyOneRight := n(1)
+		testCases = app(testCases, nil, onlyOneRight, onlyOneRight)
+	}
+	{
+		multipleLeft := n(3)
+		emptyRight := n(0)
+		testCases = app(testCases, multipleLeft, emptyRight, multipleLeft)
+	}
+	{
+		sameLeftRight := n(5)
+		testCases = app(testCases, sameLeftRight, sameLeftRight, sameLeftRight)
+	}
+	{
+		emptyLeft := n(0)
+		multipleRight := n(3)
+		testCases = app(testCases, emptyLeft, multipleRight, multipleRight)
+	}
+	{
+		onlyOneLeftRight := n(1)
+		testCases = app(testCases, onlyOneLeftRight, onlyOneLeftRight, onlyOneLeftRight)
+	}
+	{
+		differentLeft := n(5)
+		right := n(5)
+		testCases = app(testCases, differentLeft, right, append(differentLeft, right...))
+	}
+	{
+		someLeft := n(5)
+		overlapRight := append(someLeft[3:], n(2)...)
+		testCases = app(testCases, someLeft, overlapRight, append(someLeft[0:3], overlapRight...))
+	}
+
+	return testCases
+}
+
+func subtractTestCases{{.SetTypeName}}() []test{{.SetTypeName}}Case {
+	var testCases []test{{.SetTypeName}}Case
+	app := appendTest{{.SetTypeName}}Case
+	n := get{{.SetTypeName}}Items
+
+	testCases = append(testCases, []test{{.SetTypeName}}Case{{"{{"}}
+		leftElements:  nil,
+		rightElements: nil,
+		expect:        nil,
+	}, {
+		leftElements:  []{{.DataType}}{},
+		rightElements: []{{.DataType}}{},
+		expect:        []{{.DataType}}{},
+	}, {
+		leftElements:  nil,
+		rightElements: n(5),
+		expect:        nil,
+	}, {
+		leftElements:  []{{.DataType}}{},
+		rightElements: n(5),
+		expect:        []{{.DataType}}{},
+	}}...)
+
+
+	// We require access to the same generated values in both arms of the
+	// test in the following, so they require computation to workaround
+	// randomness in the new item generator
+	{
+		onlyLeft := n(5)
+		testCases = app(testCases, onlyLeft, nil, onlyLeft)
+	}
+	{
+		onlyOneLeft := n(1)
+		testCases = app(testCases, onlyOneLeft, nil, onlyOneLeft)
+	}
+	{
+		multipleLeft := n(3)
+		emptyRight := n(0)
+		testCases = app(testCases, multipleLeft, emptyRight, multipleLeft)
+	}
+	{
+		sameLeftRight := n(5)
+		testCases = app(testCases, sameLeftRight, sameLeftRight, []{{.DataType}}{})
+	}
+	{
+		onlyOneLeftRight := n(1)
+		testCases = app(testCases, onlyOneLeftRight, onlyOneLeftRight, []{{.DataType}}{})
+	}
+	{
+		differentLeft := n(5)
+		right := n(4)
+		testCases = app(testCases, differentLeft, right, differentLeft)
+	}
+	{
+		someLeft := n(5)
+		overlapRight := make([]{{.DataType}}, 0, 6)
+		overlapRight = append(overlapRight, someLeft[4], someLeft[3], someLeft[2])
+		overlapRight = append(overlapRight, n(3)...)
+		testCases = app(testCases, someLeft, overlapRight, someLeft[:2])
+	}
+
+	return testCases
+}
+
+// makeSet initialises and returns a {{.SetTypeName}} with the items provided in xs. If xs
+// is nil, the {{.SetTypeName}} is returned uninitialised.
+func make{{.SetTypeName}}ForTest(t *testing.T, xs []{{.DataType}}) {{.SetTypeName}} {
+	var s Set
+	if xs != nil {
+		s.Add(xs...)
+	}
+	require.Equal(t, len(xs), s.Count())
+	return s
+}
+
+func test{{.SetTypeName}}Operation(t *testing.T, cases []test{{.SetTypeName}}Case,
+	op func(s1 *{{.SetTypeName}}, s2 {{.SetTypeName}}),
+) {
+	t.Helper()
+
+	for i, tc := range cases {
+		t.Logf("testing case %d: %s", i, tc)
+
+		s1 := make{{.SetTypeName}}ForTest(t, tc.leftElements)
+		s2 := make{{.SetTypeName}}ForTest(t, tc.rightElements)
+
+		op(&s1, s2)
+
+		// s2 is unmodified
+		RequireSetElementsMatch(t, tc.rightElements, s2)
+
+		// s1 has been modified appropriately
+		RequireSetElementsMatch(t, tc.expect, s1)
+	}
+}
+
+func Test{{.SetTypeName}}Intersection(t *testing.T) {
+	test{{.SetTypeName}}Operation(t, intersectTestCases{{.SetTypeName}}(), func(s1 *{{.SetTypeName}}, s2 {{.SetTypeName}}) {
+		s1.Intersect(s2)
+	})
+}
+
+func Test{{.SetTypeName}}Union(t *testing.T) {
+	test{{.SetTypeName}}Operation(t, unionTestCases{{.SetTypeName}}(), func(s1 *{{.SetTypeName}}, s2 {{.SetTypeName}}) {
+		s1.Union(s2)
+	})
+
+}
+
+func TestSetSubtract(t *testing.T) {
+	test{{.SetTypeName}}Operation(t, subtractTestCases{{.SetTypeName}}(), func(s1 *{{.SetTypeName}}, s2 {{.SetTypeName}}) {
+		s1.Subtract(s2)
+	})
+}
+
+func testNonMutating{{.SetTypeName}}Operation(cases []test{{.SetTypeName}}Case, op func(s1, s2 {{.SetTypeName}}) {{.SetTypeName}}) func(*testing.T) {
+	return func(t *testing.T) {
+		for _, tc := range cases {
+			s1 := make{{.SetTypeName}}ForTest(t, tc.leftElements)
+			s2 := make{{.SetTypeName}}ForTest(t, tc.rightElements)
+
+			out := op(s1, s2)
+
+			// The input sets are not modified
+			require.Equal(t, len(tc.leftElements), s1.Count())
+			require.ElementsMatch(t, tc.leftElements, s1.Slice())
+			require.Equal(t, len(tc.rightElements), s2.Count())
+			require.ElementsMatch(t, tc.rightElements, s2.Slice())
+
+			require.Equal(t, len(tc.expect), out.Count())
+			require.ElementsMatch(t, tc.expect, out.Slice())
+		}
+	}
+}
+
+func TestIntersection{{.SetTypeName}}(t *testing.T) {
+	testNonMutating{{.SetTypeName}}Operation(intersectTestCases{{.SetTypeName}}(), Intersect{{.SetTypeName}})(t)
+}
+
+func TestUnion{{.SetTypeName}}(t *testing.T) {
+	testNonMutating{{.SetTypeName}}Operation(unionTestCases{{.SetTypeName}}(), Union{{.SetTypeName}})(t)
+}
+
+func TestSubtract{{.SetTypeName}}(t *testing.T) {
+	testNonMutating{{.SetTypeName}}Operation(subtractTestCases{{.SetTypeName}}(), Subtract{{.SetTypeName}})(t)
 }`
 )
