@@ -11,7 +11,7 @@ function reset() {
 trap reset EXIT
 
 # Update the compat tests
-"$DIR/generate_compat_test_helpers.sh"
+"$DIR/update_compat_test_helpers.sh"
 
 # Build genset for use later
 BIN_DIR="$(realpath ".bin")"
