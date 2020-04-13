@@ -10,9 +10,6 @@ function reset() {
 }
 trap reset EXIT
 
-# Update the compat tests
-"$DIR/update_compat_test_helpers.sh"
-
 # Build genset for use later
 BIN_DIR="$(realpath ".bin")"
 mkdir -p .bin
@@ -25,3 +22,6 @@ $DIR/build_genset.sh "$BIN_DIR"
 
 # Update the locally generated sets
 PATH="$BIN_DIR:$PATH" go generate ./genericset/
+
+# Update the compat tests - this must happen after genericset is generated.
+"$DIR/update_compat_test_helpers.sh"
