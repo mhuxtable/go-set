@@ -6,7 +6,6 @@ package {{.PackageName}}
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 )
 

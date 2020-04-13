@@ -12,6 +12,8 @@ import (
 	"strings"
 )
 
+var _ = reflect.TypeOf
+
 type _set_Set_interface__ map[interface{}]struct{}
 
 // Set is a basic set data structure for elements of type interface{}. It is
