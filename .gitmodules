@@ -1,3 +1,0 @@
-[submodule "lib/semver_bash"]
-	path = lib/semver_bash
-	url = https://github.com/cloudflare/semver_bash.git
