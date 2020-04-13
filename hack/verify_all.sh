@@ -11,6 +11,7 @@ function reset() {
 trap reset EXIT
 
 DIFF="$(git status --porcelain --untracked-files=no)"
+printf "%s\n" "$DIFF"
 if [ ! -z "$DIFF" ]; then
 	>&2 echo "Untracked changes found before updates. This script will produce meaningless results."
 	exit 1
