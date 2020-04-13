@@ -8,7 +8,6 @@ package genericset
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 )
 
