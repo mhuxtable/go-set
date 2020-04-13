@@ -19,6 +19,7 @@ fi
 "$DIR/update_all.sh"
 
 DIFF="$(git status --porcelain --untracked-files=no)"
+printf "%s\n" "$DIFF"
 if [ ! -z "$DIFF" ]; then
 	>&2 echo "Changes found in generated files. Run hack/update_all.sh to rectify."
 	exit 2
