@@ -5,8 +5,8 @@ go:
   - tip
 
 before_install:
-  - cd && go get golang.org/x/tools/cmd/cover
-  - cd && go get github.com/mattn/goveralls
+  - GO111MODULE=off go get golang.org/x/tools/cmd/cover
+  - GO111MODULE=off go get github.com/mattn/goveralls
 
 script:
   # Ensure the local repository is up-to-date
