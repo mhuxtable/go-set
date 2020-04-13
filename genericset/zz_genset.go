@@ -8,11 +8,8 @@ package genericset
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 )
-
-var _ = reflect.TypeOf
 
 type _set_Set_interface__ map[interface{}]struct{}
 
