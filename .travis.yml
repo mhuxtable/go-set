@@ -3,6 +3,8 @@ go:
   - 1.12
   - 1.13
   - 1.14
+  - release
+  - tip
 
 env:
   - GO111MODULE=on
