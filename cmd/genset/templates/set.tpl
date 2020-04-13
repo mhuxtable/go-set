@@ -29,29 +29,6 @@ func New{{.SetTypeName}}(x ...{{.DataType}}) {{.SetTypeName}} {
 	return s
 }
 
-// ZZ_GoSetContents returns a copy of the elements stored in this set in a
-// generic form. This is used by generic operations on the set in the go-set
-// package.
-//
-// This is not a stable interface.
-func (s {{.SetTypeName}}) ZZ_GoSetContents() []interface{} {
-	xs := make([]interface{}, 0, len(s.{{.InternalSetTypeName}}))
-	for k := range s.{{.InternalSetTypeName}} {
-		xs = append(xs, k)
-	}
-
-	return xs
-}
-
-// ZZ_GoSetType returns the type of elements stored in this set. This is used
-// by generic operations on the set in the go-set package.
-//
-// This is not a stable interface.
-func (*{{.SetTypeName}}) ZZ_GoSetType() reflect.Type {
-	var x {{.DataType}}
-	return reflect.TypeOf(x)
-}
-
 // Add adds the provided element(s) to the {{.SetTypeName}}.
 func (s *{{.InternalSetTypeName}}) Add(xs ...{{.DataType}}) {
 	if len(xs) == 0 {
