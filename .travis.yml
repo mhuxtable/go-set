@@ -12,10 +12,10 @@ before_install:
   - go get github.com/mattn/goveralls
 
 script:
-  - go test -v -covermode=count -coverprofile=coverage.out ./...
-  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+  # Ensure the local repository is up-to-date
+  - hack/verify_all.sh
 
   - hack/build_verify_genset.sh
 
-  # Ensure the local repository is up-to-date
-  - hack/verify_all.sh
+  - go test -v -covermode=count -coverprofile=coverage.out ./...
+  - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
