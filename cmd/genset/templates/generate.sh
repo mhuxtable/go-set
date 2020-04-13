@@ -6,8 +6,7 @@ SCRIPTNAME="$(basename "${BASH_SOURCE[0]}")"
 
 TEMPLATES=
 for x in $DIR/*.tpl; do
-	# Not tolerant to non-ASCII template filenames or backticks ` in the
-	# templates. Okay for now until that becomes an issue...
+	# Not tolerant to non-ASCII template filenames. Okay for now...
 	tpl="$(<"$x")"
 	tpl=${tpl//\`/"\` + \"\`\" + \`"}
 
