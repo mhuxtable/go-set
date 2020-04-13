@@ -16,7 +16,6 @@ import (
 	"unicode"
 
 	"github.com/mhuxtable/go-set/genset/templates"
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 )
@@ -65,13 +64,13 @@ func run(args []string, opts options) error {
 
 	if stat, err := os.Stat(outputDir); err != nil {
 		if os.IsNotExist(err) {
-			return errors.Errorf("output path %s does not exist", outputDir)
+			return fmt.Errorf("output path %s does not exist", outputDir)
 		}
 
-		return errors.Wrap(err, "while getting information about output path")
+		return fmt.Errorf("while getting information about output path: %w", err)
 	} else {
 		if !stat.IsDir() {
-			return errors.Errorf("output path %s is not a directory", outputDir)
+			return fmt.Errorf("output path %s is not a directory", outputDir)
 		}
 	}
 
