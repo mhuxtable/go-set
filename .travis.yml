@@ -17,10 +17,10 @@ script:
   - go test -v -covermode=count -coverprofile=coverage.out ./...
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
 
-  - |
-    # Ensure the local repository is up-to-date
-    build/generate_all.sh
-    [ -z "$(git status --porcelain --untracked-files=no)" ] || { >&2 echo "Found untracked changes. Run build/generate_all.sh"; exit 1 }
-
   - cd cmd/genset && go test -v -covermode=count -coverprofile=coverage.out ./...
   - $HOME/gopath/bin/goveralls -coverprofile=coverage.out -service=travis-ci -repotoken $COVERALLS_TOKEN
+  - cd ../../
+
+  # Ensure the local repository is up-to-date
+  - build/generate_all.sh
+  - [ -z "$(git status --porcelain --untracked-files=no)" ] || { >&2 echo "Found untracked changes. Run build/generate_all.sh"; exit 1 }
